@@ -541,7 +541,7 @@ mysql> select * from recetas;
 +-----------+-------------+----------+
 | id_insumo | id_producto | cantidad |
 +-----------+-------------+----------+
-| I001      | P001        |        3 |  <!--
+| I001      | P001        |        3 |  <!----
 | I001      | P012        |        2 |
 | I002      | P001        |        1 |
 | I003      | P006        |        1 |
@@ -561,3 +561,123 @@ mysql> select * from recetas;
 
 3.
 Cree un procedimiento almacenado que permita actualizar los id_productos de la tabla pedidos, en el cual trabaje su sesión con un nivel de aislamiento READ_UNCOMMITED, para que permita la presencia de la lectura sucia sobre la tabla y analice los resultados simulando la ejecución en paralelo de este procedimiento y en una tercera sesión realice una consulta full de la tabla. Nota: La tabla pedidos debe tener como mínimo 40 pedidos simulados.
+
+4. INDICES -----------------------------------------------------------------------------------
+
+Cree para todas las llaves foráneas de su modelo, un índice que cumpla con las características vistas en la clase anterior, según su criterio y  análisis.
+
+Creo que los indices referentes a llaves foráneas son optimizadores de consultas ya que me plantee el caso de que por ejemplo se desea consultar todos los pedidos que se han hecho para un producto en particular, por ejemplo, el producto con id_producto = 'P001' (Pan de Chocolate). Para hacer esto, se necesita buscar en la tabla pedidos todos los registros donde id_producto sea igual a 'P001'.
+
+Sin el índice en la columna id_producto, el motor  tendría que leer toda la tabla para encontrar las filas que coinciden con el id_producto y si la tabla pedidos tiene muchos registros, esto sería ineficiente y tomaría más tiempo.
+estos serian los indices:
+
+Tabla insumos
+	CREATE INDEX idx_id_unidad ON insumos (id_unidad);
+Tabla Recetas:
+	CREATE INDEX idx_id_insumo ON recetas (id_insumo);
+	CREATE INDEX idx_id_producto ON recetas (id_producto);
+Tabla facturas_Venta:
+	CREATE INDEX idx_id_cliente ON facturas_venta (id_cliente);
+Tabla pedidos
+	CREATE INDEX idx_id_factura ON pedidos (id_factura);
+	CREATE INDEX idx_id_producto ON pedidos (id_producto);
+	
+No incluí indices en tres llaves (tipo_id, id_cliente y tipo_id_cliente) porque pueden no ser tan frecuentemente usadas para búsquedas específicas, por ende prioricé claves foráneas en tablas con mayor potencial de consultas filtradas, obtener, un insumo, receta o producto me parece que tiene recurrencia que obtener por ejemplo el tipo_id de un usuario.
+
+
+5.
+Cree un procedimiento almacenado que permiso insertar, 100mil clientes nuevos, utilice si es preciso ciclos para que trabaje óptimamente.
+
+6.
+Cree un procedimiento almacenado que permita actualizar los datos de un cliente su nombre y apellido.
+
+DELIMITER //
+
+CREATE PROCEDURE actualizar_cliente(
+    IN p_id_cliente VARCHAR(255),
+    IN p_nuevo_nombre VARCHAR(255),
+    IN p_nuevo_apellido VARCHAR(255)
+)
+BEGIN
+    UPDATE clientes
+    SET nombres = p_nuevo_nombre,
+        apellidos = p_nuevo_apellido
+    WHERE id_cliente = p_id_cliente;
+END //
+
+DELIMITER ;
+
+mysql> select * from clientes; 
++------------+---------+---------+------------+---------------------+
+| id_cliente | tipo_id | nombres | apellidos  | fecha_nacimiento    |
++------------+---------+---------+------------+---------------------+
+| C001       | CC      | Juan    | Pérez      | 1980-01-01 00:00:00 |
+| C002       | CC      | María   | Gómez      | 1985-02-15 00:00:00 |
+| C003       | CC      | Carlos  | Rodríguez  | 1990-03-10 00:00:00 |
+| C004       | TI      | Ana     | Martínez   | 2000-04-20 00:00:00 |
+| C005       | TI      | Luis    | Fernández  | 1995-05-25 00:00:00 |
+| C006       | CC      | Jorge   | López      | 1982-06-30 00:00:00 |
+| C007       | CC      | Pedro   | Díaz       | 1975-07-10 00:00:00 |
+| C008       | CC      | Laura   | Hernández  | 1992-08-08 00:00:00 |
+| C009       | CC      | Marta   | Jiménez    | 1988-09-12 00:00:00 |
+| C010       | TI      | Sofía   | García     | 1999-10-05 00:00:00 |
++------------+---------+---------+------------+---------------------+
+10 rows in set (0,01 sec)
+
+Ejemplo:
+CALL actualizar_cliente('C001', 'Cristian', 'Franco');
+
+Ahora: 
+mysql> select * from clientes; 
++------------+---------+----------+------------+---------------------+
+| id_cliente | tipo_id | nombres  | apellidos  | fecha_nacimiento    |
++------------+---------+----------+------------+---------------------+
+| C001       | CC      | Cristian | Franco     | 1980-01-01 00:00:00 |  <!----
+| C002       | CC      | María    | Gómez      | 1985-02-15 00:00:00 |
+| C003       | CC      | Carlos   | Rodríguez  | 1990-03-10 00:00:00 |
+| C004       | TI      | Ana      | Martínez   | 2000-04-20 00:00:00 |
+| C005       | TI      | Luis     | Fernández  | 1995-05-25 00:00:00 |
+| C006       | CC      | Jorge    | López      | 1982-06-30 00:00:00 |
+| C007       | CC      | Pedro    | Díaz       | 1975-07-10 00:00:00 |
+| C008       | CC      | Laura    | Hernández  | 1992-08-08 00:00:00 |
+| C009       | CC      | Marta    | Jiménez    | 1988-09-12 00:00:00 |
+| C010       | TI      | Sofía    | García     | 1999-10-05 00:00:00 |
++------------+---------+----------+------------+---------------------+
+10 rows in set (0,00 sec)
+
+
+7.
+Cree un procedimiento almacenado que permita eliminar 1 o varios clientes, por su id de identificación.
+
+DELIMITER //
+
+CREATE PROCEDURE eliminar_cliente(
+    IN p_id_cliente VARCHAR(255)
+)
+BEGIN
+    DELETE FROM clientes
+    WHERE id_cliente = p_id_cliente;
+END //
+
+DELIMITER ;
+
+CALL eliminar_cliente('C004');
+
+mysql> select * from clientes; 
++------------+---------+----------+------------+---------------------+
+| id_cliente | tipo_id | nombres  | apellidos  | fecha_nacimiento    |
++------------+---------+----------+------------+---------------------+
+| C001       | CC      | Cristian | Franco     | 1980-01-01 00:00:00 |
+| C002       | CC      | María    | Gómez      | 1985-02-15 00:00:00 |
+| C003       | CC      | Carlos   | Rodríguez  | 1990-03-10 00:00:00 |
+| C005       | TI      | Luis     | Fernández  | 1995-05-25 00:00:00 |  No hay 'C004'
+| C006       | CC      | Jorge    | López      | 1982-06-30 00:00:00 |
+| C007       | CC      | Pedro    | Díaz       | 1975-07-10 00:00:00 |
+| C008       | CC      | Laura    | Hernández  | 1992-08-08 00:00:00 |
+| C009       | CC      | Marta    | Jiménez    | 1988-09-12 00:00:00 |
+| C010       | TI      | Sofía    | García     | 1999-10-05 00:00:00 |
++------------+---------+----------+------------+---------------------+
+9 rows in set (0,00 sec)
+
+
+

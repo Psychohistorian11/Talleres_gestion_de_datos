@@ -1,0 +1,563 @@
+
+
+---------------------------------------------------------------------Base de datos Actualizada ---------------------------------------------------------------------------------------------
+
+-- MySQL Script generado por MySQL Workbench
+-- Sat Sep 7 19:30:00 2024
+-- Model: New Model    Version: 1.0
+-- MySQL Workbench Forward Engineering
+
+SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0;
+SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0;
+SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION';
+
+-- -----------------------------------------------------
+-- Schema comercio
+-- -----------------------------------------------------
+
+CREATE SCHEMA IF NOT EXISTS `comercio` ;
+USE `comercio` ;
+
+CREATE TABLE IF NOT EXISTS `comercio`.`tipo` (
+  `id_tipo` VARCHAR(2) NOT NULL,
+  `descripcion` VARCHAR(30) NULL,
+  PRIMARY KEY (`id_tipo`))
+ENGINE = InnoDB;
+
+
+CREATE TABLE IF NOT EXISTS `comercio`.`clientes` (
+  `id_cliente` VARCHAR(15) NOT NULL,
+  `id_tipo` VARCHAR(2) NOT NULL,
+  `nombres` VARCHAR(255) NULL,
+  `apellidos` VARCHAR(255) NULL,
+  `fecha_nacimiento` DATETIME NULL,
+  PRIMARY KEY (`id_cliente`, `id_tipo`),
+  INDEX `fk_clientes_tipo_idx` (`id_tipo` ASC) VISIBLE,
+  CONSTRAINT `fk_clientes_tipo`
+    FOREIGN KEY (`id_tipo`)
+    REFERENCES `comercio`.`tipo` (`id_tipo`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+
+
+CREATE TABLE IF NOT EXISTS `comercio`.`medios_pago` (
+  `id_medios_pago` VARCHAR(3) NOT NULL,
+  `descripcion` VARCHAR(255) NULL,
+  PRIMARY KEY (`id_medios_pago`))
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Tabla `comercio`.`facturas_venta`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `comercio`.`facturas_venta` (
+  `id_factura` INT(11) NOT NULL,
+  `id_cliente` VARCHAR(15) NOT NULL,
+  `id_tipo_cliente` VARCHAR(2) NOT NULL,
+  `id_medios_pago` VARCHAR(3) NOT NULL,
+  `valor` INT(11) NULL,
+  `fecha` DATE NULL,
+  PRIMARY KEY (`id_factura`),
+  INDEX `fk_facturas_venta_medios_pago_idx` (`id_medios_pago` ASC) VISIBLE,
+  INDEX `fk_facturas_venta_clientes_idx` (`id_cliente`, `id_tipo_cliente` ASC) VISIBLE,
+  CONSTRAINT `fk_facturas_venta_medios_pago`
+    FOREIGN KEY (`id_medios_pago`)
+    REFERENCES `comercio`.`medios_pago` (`id_medios_pago`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_facturas_venta_clientes`
+    FOREIGN KEY (`id_cliente`, `id_tipo_cliente`)
+    REFERENCES `comercio`.`clientes` (`id_cliente`, `id_tipo`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Tabla `comercio`.`productos`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `comercio`.`productos` (
+  `id_producto` VARCHAR(10) NOT NULL,
+  `tipo` VARCHAR(30) NULL,
+  `nombre` VARCHAR(100) NULL,
+  `precio` INT(9) NULL,
+  `descripcion` VARCHAR(255) NULL,
+  PRIMARY KEY (`id_producto`))
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Tabla `comercio`.`unidad`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `comercio`.`unidad` (
+  `id_unidad` INT NOT NULL,
+  `descripcion` VARCHAR(45) NULL,
+  PRIMARY KEY (`id_unidad`))
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Tabla `comercio`.`insumos`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `comercio`.`insumos` (
+  `id_insumo` VARCHAR(10) NOT NULL,
+  `tipo` VARCHAR(20) NULL,
+  `nombre` VARCHAR(255) NULL,
+  `costo` INT(9) NULL,
+  `id_unidad` INT NOT NULL,
+  PRIMARY KEY (`id_insumo`),
+  INDEX `fk_insumos_unidad_idx` (`id_unidad` ASC) VISIBLE,
+  CONSTRAINT `fk_insumos_unidad`
+    FOREIGN KEY (`id_unidad`)
+    REFERENCES `comercio`.`unidad` (`id_unidad`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Tabla `comercio`.`recetas`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `comercio`.`recetas` (
+  `id_insumo` VARCHAR(10) NOT NULL,
+  `id_producto` VARCHAR(10) NOT NULL,
+  `cantidad` SMALLINT NULL,
+  INDEX `fk_recetas_productos_idx` (`id_producto` ASC) VISIBLE,
+  PRIMARY KEY (`id_insumo`, `id_producto`),
+  INDEX `fk_recetas_insumos_idx` (`id_insumo` ASC) VISIBLE,
+  CONSTRAINT `fk_recetas_productos`
+    FOREIGN KEY (`id_producto`)
+    REFERENCES `comercio`.`productos` (`id_producto`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_recetas_insumos`
+    FOREIGN KEY (`id_insumo`)
+    REFERENCES `comercio`.`insumos` (`id_insumo`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Tabla `comercio`.`proveedores`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `comercio`.`proveedores` (
+  `id_proveedor` VARCHAR(15) NOT NULL,
+  `id_tipo` VARCHAR(2) NOT NULL,
+  `nombre` VARCHAR(255) NULL,
+  `direccion` VARCHAR(255) NULL,
+  `telefono` VARCHAR(15) NULL,
+  PRIMARY KEY (`id_proveedor`),
+  INDEX `fk_proveedores_tipo_idx` (`id_tipo` ASC) VISIBLE,
+  CONSTRAINT `fk_proveedores_tipo`
+    FOREIGN KEY (`id_tipo`)
+    REFERENCES `comercio`.`tipo` (`id_tipo`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Tabla `comercio`.`insumos_proveedores`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `comercio`.`insumos_proveedores` (
+  `id_proveedor` VARCHAR(15) NOT NULL,
+  `id_tipo_proveedor` VARCHAR(2) NOT NULL,
+  `id_insumo` VARCHAR(10) NOT NULL,
+  PRIMARY KEY (`id_proveedor`, `id_tipo_proveedor`, `id_insumo`),
+  INDEX `fk_insumos_proveedores_insumos_idx` (`id_insumo` ASC) VISIBLE,
+  INDEX `fk_insumos_proveedores_proveedores_idx` (`id_proveedor`, `id_tipo_proveedor` ASC) VISIBLE,
+  CONSTRAINT `fk_insumos_proveedores_insumos`
+    FOREIGN KEY (`id_insumo`)
+    REFERENCES `comercio`.`insumos` (`id_insumo`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_insumos_proveedores_proveedores`
+    FOREIGN KEY (`id_proveedor`, `id_tipo_proveedor`)
+    REFERENCES `comercio`.`proveedores` (`id_proveedor`, `id_tipo`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Tabla `comercio`.`pedidos`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `comercio`.`pedidos` (
+  `id_factura` INT(11) NOT NULL,
+  `id_producto` VARCHAR(10) NOT NULL,
+  `fecha` DATE NULL,
+  INDEX `fk_pedidos_facturas_venta_idx` (`id_factura` ASC) VISIBLE,
+  INDEX `fk_pedidos_productos_idx` (`id_producto` ASC) VISIBLE,
+  PRIMARY KEY (`id_factura`, `id_producto`),
+  CONSTRAINT `fk_pedidos_facturas_venta`
+    FOREIGN KEY (`id_factura`)
+    REFERENCES `comercio`.`facturas_venta` (`id_factura`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_pedidos_productos`
+    FOREIGN KEY (`id_producto`)
+    REFERENCES `comercio`.`productos` (`id_producto`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+
+SET SQL_MODE=@OLD_SQL_MODE;
+SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;
+SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS;
+
+------------------------------------------------------------------------------------------Inserts--------------------------------------------------------------------------------------------
+
+-- Insertar datos en la tabla `tipos`
+INSERT INTO `comercio`.`tipos` (tipo_id, descripcion) VALUES
+ ('CC', 'Cédula de Ciudadanía'),
+ ('TI', 'Tarjeta de Identidad'),
+ ('NIT', 'Número de Identificación Tributaria'),
+ ('CE', 'Cédula de Extrangería'),
+ ('PP', 'Pasaporte');
+
+-- Insertar datos en la tabla `clientes`
+INSERT INTO `comercio`.`clientes` (id_cliente, tipo_id, nombres, apellidos, fecha_nacimiento) VALUES 
+ ('C001', 'CC', 'Juan', 'Pérez', '1980-01-01'), 
+ ('C002', 'CC', 'María', 'Gómez', '1985-02-15'), 
+ ('C003', 'CC', 'Carlos', 'Rodríguez', '1990-03-10'), 
+ ('C004', 'TI', 'Ana', 'Martínez', '2000-04-20'), 
+ ('C005', 'TI', 'Luis', 'Fernández', '1995-05-25'),
+ ('C006', 'CC', 'Jorge', 'López', '1982-06-30'), 
+ ('C007', 'CC', 'Pedro', 'Díaz', '1975-07-10'), 
+ ('C008', 'CC', 'Laura', 'Hernández', '1992-08-08'),
+ ('C009', 'CC', 'Marta', 'Jiménez', '1988-09-12'),
+ ('C010', 'TI', 'Sofía', 'García', '1999-10-05');
+
+-- Insertar datos en la tabla `proveedores`
+INSERT INTO `comercio`.`proveedores` (id_proveedor, tipo_id, nombre, direccion, telefono) VALUES 
+ ('P001', 'NIT', 'Proveedor A', 'Calle 1 #10-20', '3101234567'), 
+ ('P002', 'NIT', 'Proveedor B', 'Calle 2 #20-30', '3111234567'), 
+ ('P003', 'NIT', 'Proveedor C', 'Calle 3 #30-40', '3121234567'), 
+ ('P004', 'NIT', 'Proveedor D', 'Calle 4 #40-50', '3131234567'), 
+ ('P005', 'NIT', 'Proveedor E', 'Calle 5 #50-60', '3141234567'), 
+ ('P006', 'NIT', 'Proveedor F', 'Calle 6 #60-70', '3151234567'), 
+ ('P007', 'NIT', 'Proveedor G', 'Calle 7 #70-80', '3161234567'), 
+ ('P008', 'NIT', 'Proveedor H', 'Calle 8 #80-90', '3171234567'), 
+ ('P009', 'NIT', 'Proveedor I', 'Calle 9 #90-100', '3181234567'), 
+ ('P010', 'NIT', 'Proveedor J', 'Calle 10 #100-110', '3191234567');
+
+-- Insertar datos en la tabla `unidad`
+INSERT INTO `comercio`.`unidad` (id_unidad, descripcion) VALUES
+ (1, 'Kilogramo'),
+ (2, 'Litro'),
+ (3, 'Unidad');
+
+-- Insertar datos en la tabla `insumos`
+INSERT INTO `comercio`.`insumos` (id_insumo, tipo, nombre, costo, id_unidad) VALUES
+ ('I001', 'Materia Prima', 'Harina', 1500, 1),
+ ('I002', 'Materia Prima', 'Azúcar', 1000, 1),
+ ('I003', 'Materia Prima', 'Leche', 3000, 2),
+ ('I004', 'Materia Prima', 'Huevos', 500, 3),
+ ('I005', 'Materia Prima', 'Mantequilla', 2500, 1),
+ ('I006', 'Materia Prima', 'Sal', 800, 1),
+ ('I007', 'Materia Prima', 'Café', 2000, 1),
+ ('I008', 'Materia Prima', 'Chocolate', 2500, 1),
+ ('I009', 'Materia Prima', 'Agua', 500, 2),
+ ('I010', 'Materia Prima', 'Levadura', 1200, 1);
+
+-- Insertar datos en la tabla `productos`
+INSERT INTO `comercio`.`productos` (id_producto, tipo, nombre, precio, descripcion) VALUES
+ ('P001', 'Producto Terminado', 'Pan de Chocolate', 10000, 'Pan hecho con chocolate'),
+ ('P002', 'Producto Terminado', 'Torta de Vainilla', 15000, 'Torta hecha con esencia de vainilla'),
+ ('P003', 'Producto Terminado', 'Croissant', 5000, 'Croissant de mantequilla'),
+ ('P004', 'Producto Terminado', 'Galletas', 7000, 'Galletas de avena'),
+ ('P005', 'Producto Terminado', 'Café', 3000, 'Taza de café negro'),
+ ('P006', 'Producto Terminado', 'Capuchino', 4000, 'Café con leche y espuma'),
+ ('P007', 'Producto Terminado', 'Sandwich', 8000, 'Sandwich de jamón y queso'),
+ ('P008', 'Producto Terminado', 'Empanada', 3000, 'Empanada de carne'),
+ ('P009', 'Producto Terminado', 'Jugos', 2000, 'Jugo natural de frutas'),
+ ('P010', 'Producto Terminado', 'Té', 2500, 'Té negro');
+
+-- Insertar datos en la tabla `recetas`
+INSERT INTO `comercio`.`recetas` (id_insumo, id_producto, cantidad) VALUES
+ ('I001', 'P001', 2),
+ ('I002', 'P001', 1),
+ ('I008', 'P001', 1),
+ ('I005', 'P003', 2),
+ ('I004', 'P003', 2),
+ ('I003', 'P006', 1),
+ ('I009', 'P006', 1),
+ ('I010', 'P006', 1),
+ ('I007', 'P005', 1),
+ ('I009', 'P005', 1);
+
+-- Insertar datos en la tabla `medios_pago`
+INSERT INTO `comercio`.`medios_pago` (id_medios_pago, descripcion) VALUES
+ ('MP1', 'Efectivo'),
+ ('MP2', 'Tarjeta de Crédito'),
+ ('MP3', 'Transferencia Bancaria');
+
+----------------------------------------------------------------------------------------- PREGUNTAS  -------------------------------------------------------------------------------------
+
+1.
+Crear un procedimiento almacenado que permita crear una nueva receta, validando previamente que los insumos de la receta si existan dentro de la tabla insumos, de no existir deberá crear primero los insumos en la tabla insumos para previamente crear la receta. Nota: Debemos crear por lo menos 20 recetas nuevas con 40 insumos diferentes.
+
+DELIMITER //
+
+CREATE PROCEDURE CrearReceta (
+    IN idProducto VARCHAR(255),
+    IN nombreProducto VARCHAR(255),
+    IN tipoProducto VARCHAR(255),
+    IN precioProducto INT,
+    IN descripcionProducto VARCHAR(255),
+    IN idInsumo1 VARCHAR(255), IN nombreInsumo1 VARCHAR(255), IN tipoInsumo1 VARCHAR(255), IN costo1 INT, IN idUnidad1 INT, IN cantidad1 SMALLINT,
+    IN idInsumo2 VARCHAR(255), IN nombreInsumo2 VARCHAR(255), IN tipoInsumo2 VARCHAR(255), IN costo2 INT, IN idUnidad2 INT, IN cantidad2 SMALLINT
+)
+BEGIN
+
+    IF NOT EXISTS (SELECT 1 FROM productos WHERE id_producto = idProducto) THEN
+        -- Insertar el nuevo producto en la tabla 'productos'
+        INSERT INTO productos (id_producto, tipo, nombre, precio, descripcion)
+        VALUES (idProducto, tipoProducto, nombreProducto, precioProducto, descripcionProducto);
+    END IF;
+    
+    -- insumo 1 verificación
+    IF NOT EXISTS (SELECT 1 FROM insumos WHERE id_insumo = idInsumo1) THEN
+        -- Insertar el nuevo insumo en la tabla 'insumos'
+        INSERT INTO insumos (id_insumo, tipo, nombre, costo, id_unidad)
+        VALUES (idInsumo1, tipoInsumo1, nombreInsumo1, costo1, idUnidad1);
+    END IF;
+
+     -- Insumo 2 verificación
+     
+    IF NOT EXISTS (SELECT 1 FROM insumos WHERE id_insumo = idInsumo2) THEN
+        -- Insertar el nuevo insumo en la tabla 'insumos'
+        INSERT INTO insumos (id_insumo, tipo, nombre, costo, id_unidad)
+        VALUES (idInsumo2, tipoInsumo2, nombreInsumo2, costo2, idUnidad2);
+    END IF;
+    
+    -- Insertar la receta
+    INSERT INTO recetas (id_insumo, id_producto, cantidad) VALUES (idInsumo1, idProducto, cantidad1);
+    INSERT INTO recetas (id_insumo, id_producto, cantidad) VALUES (idInsumo2, idProducto, cantidad2);
+
+END //
+
+DELIMITER ;
+
+
+
+------------- EJEMPLO-------------
+En este primer llamado al procedimiento le estamos entregando dos insumos que no existen como se puede ver si hacemos un select:
+mysql> select * from insumos;
++-----------+---------------+-------------+-------+-----------+
+| id_insumo | tipo          | nombre      | costo | id_unidad |
++-----------+---------------+-------------+-------+-----------+
+| I001      | Materia Prima | Harina      |  1500 |         1 |
+| I002      | Materia Prima | Azúcar      |  1000 |         1 |
+| I003      | Materia Prima | Leche       |  3000 |         2 |
+| I004      | Materia Prima | Huevos      |   500 |         3 |
+| I005      | Materia Prima | Mantequilla |  2500 |         1 |
+| I006      | Materia Prima | Sal         |   800 |         1 |
+| I007      | Materia Prima | Café        |  2000 |         1 |
+| I008      | Materia Prima | Chocolate   |  2500 |         1 |
+| I009      | Materia Prima | Agua        |   500 |         2 |
+| I010      | Materia Prima | Levadura    |  1200 |         1 |
++-----------+---------------+-------------+-------+-----------+
+10 rows in set (0,00 sec)
+
+CALL CrearReceta(
+    'P011', 'Pan Integral', 'Producto Terminado', 12000, 'Pan hecho con harina integral',
+    'I011', 'Harina Integral', 'Materia Prima', 1600, 1, 3,
+    'I012', 'Semillas de Amapola', 'Materia Prima', 1000, 1, 2
+);
+
+si hacemos ahora select de la tabla productos, vemos la integración del pan integral
+
+mysql> select * from productos; 
++-------------+--------------------+-------------------+--------+-------------------------------------+
+| id_producto | tipo               | nombre            | precio | descripcion                         |
++-------------+--------------------+-------------------+--------+-------------------------------------+
+| P001        | Producto Terminado | Pan de Chocolate  |  10000 | Pan hecho con chocolate             |
+| P002        | Producto Terminado | Torta de Vainilla |  15000 | Torta hecha con esencia de vainilla |
+| P003        | Producto Terminado | Croissant         |   5000 | Croissant de mantequilla            |
+| P004        | Producto Terminado | Galletas          |   7000 | Galletas de avena                   |
+| P005        | Producto Terminado | Café              |   3000 | Taza de café negro                  |
+| P006        | Producto Terminado | Capuchino         |   4000 | Café con leche y espuma             |
+| P007        | Producto Terminado | Sandwich          |   8000 | Sandwich de jamón y queso           |
+| P008        | Producto Terminado | Empanada          |   3000 | Empanada de carne                   |
+| P009        | Producto Terminado | Jugos             |   2000 | Jugo natural de frutas              |
+| P010        | Producto Terminado | Té                |   2500 | Té negro                            |
+| P011        | Producto Terminado | Pan Integral      |  12000 | Pan hecho con harina integral       |
++-------------+--------------------+-------------------+--------+-------------------------------------+
+11 rows in set (0,00 sec)
+
+y como se añaden los insumos:
+
+mysql> select * from insumos; 
++-----------+---------------+---------------------+-------+-----------+
+| id_insumo | tipo          | nombre              | costo | id_unidad |
++-----------+---------------+---------------------+-------+-----------+
+| I001      | Materia Prima | Harina              |  1500 |         1 |
+| I002      | Materia Prima | Azúcar              |  1000 |         1 |
+| I003      | Materia Prima | Leche               |  3000 |         2 |
+| I004      | Materia Prima | Huevos              |   500 |         3 |
+| I005      | Materia Prima | Mantequilla         |  2500 |         1 |
+| I006      | Materia Prima | Sal                 |   800 |         1 |
+| I007      | Materia Prima | Café                |  2000 |         1 |
+| I008      | Materia Prima | Chocolate           |  2500 |         1 |
+| I009      | Materia Prima | Agua                |   500 |         2 |
+| I010      | Materia Prima | Levadura            |  1200 |         1 |
+| I011      | Materia Prima | Harina Integral     |  1600 |         1 |
+| I012      | Materia Prima | Semillas de Amapola |  1000 |         1 |
++-----------+---------------+---------------------+-------+-----------+
+12 rows in set (0,00 sec)
+
+Ahora un ejemplo donde utilice un insumo que ya existe:
+
+mysql> CALL CrearReceta(
+    ->     'P012', 'Pan de Centeno', 'Producto Terminado', 13000, 'Pan hecho con harina de centeno',
+    ->     'I001', 'Harina', 'Materia Prima', 1500, 1, 2, -- Insumo ya existente
+    ->     'I013', 'Harina de Centeno', 'Materia Prima', 1800, 1, 3 -- Nuevo insumo
+    -> );
+Query OK, 1 row affected (0,07 sec)
+
+mysql> select * from insumos; 
++-----------+---------------+---------------------+-------+-----------+
+| id_insumo | tipo          | nombre              | costo | id_unidad |
++-----------+---------------+---------------------+-------+-----------+
+| I001      | Materia Prima | Harina              |  1500 |         1 |
+| I002      | Materia Prima | Azúcar              |  1000 |         1 |
+| I003      | Materia Prima | Leche               |  3000 |         2 |
+| I004      | Materia Prima | Huevos              |   500 |         3 |
+| I005      | Materia Prima | Mantequilla         |  2500 |         1 |
+| I006      | Materia Prima | Sal                 |   800 |         1 |
+| I007      | Materia Prima | Café                |  2000 |         1 |
+| I008      | Materia Prima | Chocolate           |  2500 |         1 |
+| I009      | Materia Prima | Agua                |   500 |         2 |
+| I010      | Materia Prima | Levadura            |  1200 |         1 |
+| I011      | Materia Prima | Harina Integral     |  1600 |         1 |
+| I012      | Materia Prima | Semillas de Amapola |  1000 |         1 |
+| I013      | Materia Prima | Harina de Centeno   |  1800 |         1 |
++-----------+---------------+---------------------+-------+-----------+
+13 rows in set (0,00 sec)
+
+Vemos la relación, el ultimo producto el "Pan de centeno" se hace con el insumo I001 y el I013 como muestra la tabla que los relaciona
+
+mysql> select * from recetas; 
++-----------+-------------+----------+
+| id_insumo | id_producto | cantidad |
++-----------+-------------+----------+
+| I001      | P001        |        2 |
+| I001      | P012        |        2 |
+| I002      | P001        |        1 |
+| I003      | P006        |        1 |
+| I004      | P003        |        2 |
+| I005      | P003        |        2 |
+| I007      | P005        |        1 |
+| I008      | P001        |        1 |
+| I009      | P005        |        1 |
+| I009      | P006        |        1 |
+| I010      | P006        |        1 |
+| I011      | P011        |        3 |
+| I012      | P011        |        2 |
+| I013      | P012        |        3 |
++-----------+-------------+----------+
+14 rows in set (0,00 sec)
+
+
+2.
+Crear un procedimiento almacenado que permita actualizar una receta ya existente, Nota: Importante aplique para estos procedimientos control de concurrencia por bloqueos.
+
+DELIMITER $$
+
+CREATE PROCEDURE ActualizarReceta(
+    IN p_id_producto VARCHAR(255),
+    IN p_id_insumo VARCHAR(255),
+    IN p_cantidad SMALLINT,
+    IN p_nuevo_id_insumo VARCHAR(255),
+    IN p_nueva_cantidad SMALLINT
+)
+BEGIN
+    DECLARE insumo_existente BOOLEAN;
+
+    START TRANSACTION;
+
+    -- Bloqueo para garantizar que nadie más puede modificar la receta durante la actualización
+    SELECT 1
+    INTO insumo_existente
+    FROM recetas
+    WHERE id_producto = p_id_producto AND id_insumo = p_id_insumo
+    FOR UPDATE;
+
+    IF insumo_existente THEN
+        -- Si el insumo ya está en la receta, actualizamos la cantidad del insumo
+        UPDATE recetas
+        SET cantidad = p_cantidad
+        WHERE id_producto = p_id_producto AND id_insumo = p_id_insumo;
+
+        -- Insertar si no existe
+        INSERT INTO recetas (id_insumo, id_producto, cantidad)
+        VALUES (p_nuevo_id_insumo, p_id_producto, p_nueva_cantidad)
+        ON DUPLICATE KEY UPDATE
+            cantidad = VALUES(cantidad); -- Si ya existe, actualizamos la cantidad
+
+    ELSE
+        -- Si no existe la receta, lanzamos un error
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'La receta especificada no existe.';
+    END IF;
+
+    COMMIT;
+END$$
+
+DELIMITER ;
+
+---------EJEMPLO-----------------
+Supongamos que se tiene una receta para el producto P001 (Pan de Chocolate)
+y se quiere actualizar el insumo I001 (Harina) a una nueva cantidad de 3 kilogramos, 
+además de agregar un nuevo insumo, I012 (Esencia de vainilla) con una cantidad de 1.
+
+Para el pan de chocolate:
++-------------+--------------------+-------------------+--------+-------------------------------------+
+| id_producto | tipo               | nombre            | precio | descripcion                         |
++-------------+--------------------+-------------------+--------+-------------------------------------+
+| P001        | Producto Terminado | Pan de Chocolate  |  10000 | Pan hecho con chocolate             |
+
+Se necesitan 3 cosas, Hariana (I001), Azúcar (I002) y chocolate (I008)
+
+mysql> select * from recetas; 
++-----------+-------------+----------+
+| id_insumo | id_producto | cantidad |
++-----------+-------------+----------+
+| I001      | P001        |        2 |
+| I002      | P001        |        1 |
+| I008      | P001        |        1 |
+
+vemos que la cantidad de hariana que se necesita es 2
+CALL ActualizarReceta('P001', 'I001', 3, 'I012', 1);
+
+la tabla cambia:
+
+mysql> select * from recetas; 
++-----------+-------------+----------+
+| id_insumo | id_producto | cantidad |
++-----------+-------------+----------+
+| I001      | P001        |        3 |  <!--
+| I001      | P012        |        2 |
+| I002      | P001        |        1 |
+| I003      | P006        |        1 |
+| I004      | P003        |        2 |
+| I005      | P003        |        2 |
+| I007      | P005        |        1 |
+| I008      | P001        |        1 |
+| I009      | P005        |        1 |
+| I009      | P006        |        1 |
+| I010      | P006        |        1 |
+| I011      | P011        |        3 |
+| I012      | P001        |        1 |
+| I012      | P011        |        2 |
+| I013      | P012        |        3 |
++-----------+-------------+----------+
+15 rows in set (0,00 sec)
+
+3.
+Cree un procedimiento almacenado que permita actualizar los id_productos de la tabla pedidos, en el cual trabaje su sesión con un nivel de aislamiento READ_UNCOMMITED, para que permita la presencia de la lectura sucia sobre la tabla y analice los resultados simulando la ejecución en paralelo de este procedimiento y en una tercera sesión realice una consulta full de la tabla. Nota: La tabla pedidos debe tener como mínimo 40 pedidos simulados.

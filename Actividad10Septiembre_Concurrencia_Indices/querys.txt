@@ -2,9 +2,6 @@
 
 ---------------------------------------------------------------------Base de datos Actualizada ---------------------------------------------------------------------------------------------
 
--- MySQL Script generado por MySQL Workbench
--- Sat Sep 7 19:30:00 2024
--- Model: New Model    Version: 1.0
 -- MySQL Workbench Forward Engineering
 
 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0;
@@ -15,194 +12,174 @@ SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,N
 -- Schema comercio
 -- -----------------------------------------------------
 
-CREATE SCHEMA IF NOT EXISTS `comercio` ;
+-- -----------------------------------------------------
+-- Schema comercio
+-- -----------------------------------------------------
+CREATE SCHEMA IF NOT EXISTS `comercio` DEFAULT CHARACTER SET utf8mb3 ;
 USE `comercio` ;
 
-CREATE TABLE IF NOT EXISTS `comercio`.`tipo` (
-  `id_tipo` VARCHAR(2) NOT NULL,
-  `descripcion` VARCHAR(30) NULL,
-  PRIMARY KEY (`id_tipo`))
-ENGINE = InnoDB;
-
-
-CREATE TABLE IF NOT EXISTS `comercio`.`clientes` (
-  `id_cliente` VARCHAR(15) NOT NULL,
-  `id_tipo` VARCHAR(2) NOT NULL,
-  `nombres` VARCHAR(255) NULL,
-  `apellidos` VARCHAR(255) NULL,
-  `fecha_nacimiento` DATETIME NULL,
-  PRIMARY KEY (`id_cliente`, `id_tipo`),
-  INDEX `fk_clientes_tipo_idx` (`id_tipo` ASC) VISIBLE,
-  CONSTRAINT `fk_clientes_tipo`
-    FOREIGN KEY (`id_tipo`)
-    REFERENCES `comercio`.`tipo` (`id_tipo`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-ENGINE = InnoDB;
-
-
-
-CREATE TABLE IF NOT EXISTS `comercio`.`medios_pago` (
-  `id_medios_pago` VARCHAR(3) NOT NULL,
-  `descripcion` VARCHAR(255) NULL,
-  PRIMARY KEY (`id_medios_pago`))
-ENGINE = InnoDB;
+-- -----------------------------------------------------
+-- Table `comercio`.`tipos`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `comercio`.`tipos` (
+  `tipo_id` VARCHAR(255) NOT NULL,
+  `descripcion` VARCHAR(255) NULL DEFAULT NULL,
+  PRIMARY KEY (`tipo_id`))
+ENGINE = InnoDB
+DEFAULT CHARACTER SET = utf8mb3;
 
 
 -- -----------------------------------------------------
--- Tabla `comercio`.`facturas_venta`
+-- Table `comercio`.`clientes`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `comercio`.`clientes` (
+  `id_cliente` VARCHAR(255) NOT NULL,
+  `tipo_id` VARCHAR(255) NOT NULL,
+  `nombres` VARCHAR(255) NULL DEFAULT NULL,
+  `apellidos` VARCHAR(255) NULL DEFAULT NULL,
+  `fecha_nacimiento` DATETIME NULL DEFAULT NULL,
+  PRIMARY KEY (`id_cliente`, `tipo_id`),
+  INDEX `fk_clientes_tipos_idx` (`tipo_id` ASC) VISIBLE,
+  CONSTRAINT `fk_clientes_tipos`
+    FOREIGN KEY (`tipo_id`)
+    REFERENCES `comercio`.`tipos` (`tipo_id`))
+ENGINE = InnoDB
+DEFAULT CHARACTER SET = utf8mb3;
+
+
+-- -----------------------------------------------------
+-- Table `comercio`.`medios_pago`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `comercio`.`medios_pago` (
+  `id_medios_pago` VARCHAR(255) NOT NULL,
+  `descripcion` VARCHAR(255) NULL DEFAULT NULL,
+  PRIMARY KEY (`id_medios_pago`))
+ENGINE = InnoDB
+DEFAULT CHARACTER SET = utf8mb3;
+
+
+-- -----------------------------------------------------
+-- Table `comercio`.`facturas_venta`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `comercio`.`facturas_venta` (
-  `id_factura` INT(11) NOT NULL,
-  `id_cliente` VARCHAR(15) NOT NULL,
-  `id_tipo_cliente` VARCHAR(2) NOT NULL,
-  `id_medios_pago` VARCHAR(3) NOT NULL,
-  `valor` INT(11) NULL,
-  `fecha` DATE NULL,
+  `id_factura` INT NOT NULL AUTO_INCREMENT,
+  `id_cliente` VARCHAR(255) NOT NULL,
+  `tipo_id_cliente` VARCHAR(255) NOT NULL,
+  `id_medios_pago` VARCHAR(255) NULL DEFAULT NULL,
+  `valor` INT NULL DEFAULT NULL,
+  `fecha` DATE NULL DEFAULT NULL,
   PRIMARY KEY (`id_factura`),
   INDEX `fk_facturas_venta_medios_pago_idx` (`id_medios_pago` ASC) VISIBLE,
-  INDEX `fk_facturas_venta_clientes_idx` (`id_cliente`, `id_tipo_cliente` ASC) VISIBLE,
+  INDEX `fk_facturas_venta_clientes_idx` (`id_cliente` ASC, `tipo_id_cliente` ASC) VISIBLE,
+  CONSTRAINT `fk_facturas_venta_clientes`
+    FOREIGN KEY (`id_cliente` , `tipo_id_cliente`)
+    REFERENCES `comercio`.`clientes` (`id_cliente` , `tipo_id`),
   CONSTRAINT `fk_facturas_venta_medios_pago`
     FOREIGN KEY (`id_medios_pago`)
-    REFERENCES `comercio`.`medios_pago` (`id_medios_pago`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_facturas_venta_clientes`
-    FOREIGN KEY (`id_cliente`, `id_tipo_cliente`)
-    REFERENCES `comercio`.`clientes` (`id_cliente`, `id_tipo`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-ENGINE = InnoDB;
+    REFERENCES `comercio`.`medios_pago` (`id_medios_pago`))
+ENGINE = InnoDB
+DEFAULT CHARACTER SET = utf8mb3;
 
 
 -- -----------------------------------------------------
--- Tabla `comercio`.`productos`
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `comercio`.`productos` (
-  `id_producto` VARCHAR(10) NOT NULL,
-  `tipo` VARCHAR(30) NULL,
-  `nombre` VARCHAR(100) NULL,
-  `precio` INT(9) NULL,
-  `descripcion` VARCHAR(255) NULL,
-  PRIMARY KEY (`id_producto`))
-ENGINE = InnoDB;
-
-
--- -----------------------------------------------------
--- Tabla `comercio`.`unidad`
+-- Table `comercio`.`unidad`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `comercio`.`unidad` (
   `id_unidad` INT NOT NULL,
-  `descripcion` VARCHAR(45) NULL,
+  `descripcion` VARCHAR(255) NULL DEFAULT NULL,
   PRIMARY KEY (`id_unidad`))
-ENGINE = InnoDB;
+ENGINE = InnoDB
+DEFAULT CHARACTER SET = utf8mb3;
 
 
 -- -----------------------------------------------------
--- Tabla `comercio`.`insumos`
+-- Table `comercio`.`insumos`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `comercio`.`insumos` (
-  `id_insumo` VARCHAR(10) NOT NULL,
-  `tipo` VARCHAR(20) NULL,
-  `nombre` VARCHAR(255) NULL,
-  `costo` INT(9) NULL,
+  `id_insumo` VARCHAR(255) NOT NULL,
+  `tipo` VARCHAR(255) NULL DEFAULT NULL,
+  `nombre` VARCHAR(255) NULL DEFAULT NULL,
+  `costo` INT NULL DEFAULT NULL,
   `id_unidad` INT NOT NULL,
   PRIMARY KEY (`id_insumo`),
   INDEX `fk_insumos_unidad_idx` (`id_unidad` ASC) VISIBLE,
   CONSTRAINT `fk_insumos_unidad`
     FOREIGN KEY (`id_unidad`)
-    REFERENCES `comercio`.`unidad` (`id_unidad`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-ENGINE = InnoDB;
+    REFERENCES `comercio`.`unidad` (`id_unidad`))
+ENGINE = InnoDB
+DEFAULT CHARACTER SET = utf8mb3;
 
 
 -- -----------------------------------------------------
--- Tabla `comercio`.`recetas`
+-- Table `comercio`.`productos`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `comercio`.`recetas` (
-  `id_insumo` VARCHAR(10) NOT NULL,
-  `id_producto` VARCHAR(10) NOT NULL,
-  `cantidad` SMALLINT NULL,
-  INDEX `fk_recetas_productos_idx` (`id_producto` ASC) VISIBLE,
-  PRIMARY KEY (`id_insumo`, `id_producto`),
-  INDEX `fk_recetas_insumos_idx` (`id_insumo` ASC) VISIBLE,
-  CONSTRAINT `fk_recetas_productos`
-    FOREIGN KEY (`id_producto`)
-    REFERENCES `comercio`.`productos` (`id_producto`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_recetas_insumos`
-    FOREIGN KEY (`id_insumo`)
-    REFERENCES `comercio`.`insumos` (`id_insumo`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-ENGINE = InnoDB;
+CREATE TABLE IF NOT EXISTS `comercio`.`productos` (
+  `id_producto` VARCHAR(255) NOT NULL,
+  `tipo` VARCHAR(255) NULL DEFAULT NULL,
+  `nombre` VARCHAR(255) NULL DEFAULT NULL,
+  `precio` INT NULL DEFAULT NULL,
+  `descripcion` VARCHAR(255) NULL DEFAULT NULL,
+  PRIMARY KEY (`id_producto`))
+ENGINE = InnoDB
+DEFAULT CHARACTER SET = utf8mb3;
 
 
 -- -----------------------------------------------------
--- Tabla `comercio`.`proveedores`
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `comercio`.`proveedores` (
-  `id_proveedor` VARCHAR(15) NOT NULL,
-  `id_tipo` VARCHAR(2) NOT NULL,
-  `nombre` VARCHAR(255) NULL,
-  `direccion` VARCHAR(255) NULL,
-  `telefono` VARCHAR(15) NULL,
-  PRIMARY KEY (`id_proveedor`),
-  INDEX `fk_proveedores_tipo_idx` (`id_tipo` ASC) VISIBLE,
-  CONSTRAINT `fk_proveedores_tipo`
-    FOREIGN KEY (`id_tipo`)
-    REFERENCES `comercio`.`tipo` (`id_tipo`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-ENGINE = InnoDB;
-
-
--- -----------------------------------------------------
--- Tabla `comercio`.`insumos_proveedores`
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `comercio`.`insumos_proveedores` (
-  `id_proveedor` VARCHAR(15) NOT NULL,
-  `id_tipo_proveedor` VARCHAR(2) NOT NULL,
-  `id_insumo` VARCHAR(10) NOT NULL,
-  PRIMARY KEY (`id_proveedor`, `id_tipo_proveedor`, `id_insumo`),
-  INDEX `fk_insumos_proveedores_insumos_idx` (`id_insumo` ASC) VISIBLE,
-  INDEX `fk_insumos_proveedores_proveedores_idx` (`id_proveedor`, `id_tipo_proveedor` ASC) VISIBLE,
-  CONSTRAINT `fk_insumos_proveedores_insumos`
-    FOREIGN KEY (`id_insumo`)
-    REFERENCES `comercio`.`insumos` (`id_insumo`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_insumos_proveedores_proveedores`
-    FOREIGN KEY (`id_proveedor`, `id_tipo_proveedor`)
-    REFERENCES `comercio`.`proveedores` (`id_proveedor`, `id_tipo`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-ENGINE = InnoDB;
-
-
--- -----------------------------------------------------
--- Tabla `comercio`.`pedidos`
+-- Table `comercio`.`pedidos`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `comercio`.`pedidos` (
-  `id_factura` INT(11) NOT NULL,
-  `id_producto` VARCHAR(10) NOT NULL,
-  `fecha` DATE NULL,
+  `id_factura` INT NOT NULL,
+  `id_producto` VARCHAR(255) NOT NULL,
+  `fecha` DATE NULL DEFAULT NULL,
+  PRIMARY KEY (`id_factura`, `id_producto`),
   INDEX `fk_pedidos_facturas_venta_idx` (`id_factura` ASC) VISIBLE,
   INDEX `fk_pedidos_productos_idx` (`id_producto` ASC) VISIBLE,
-  PRIMARY KEY (`id_factura`, `id_producto`),
   CONSTRAINT `fk_pedidos_facturas_venta`
     FOREIGN KEY (`id_factura`)
-    REFERENCES `comercio`.`facturas_venta` (`id_factura`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
+    REFERENCES `comercio`.`facturas_venta` (`id_factura`),
   CONSTRAINT `fk_pedidos_productos`
     FOREIGN KEY (`id_producto`)
-    REFERENCES `comercio`.`productos` (`id_producto`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-ENGINE = InnoDB;
+    REFERENCES `comercio`.`productos` (`id_producto`))
+ENGINE = InnoDB
+DEFAULT CHARACTER SET = utf8mb3;
+
+
+-- -----------------------------------------------------
+-- Table `comercio`.`proveedores`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `comercio`.`proveedores` (
+  `id_proveedor` VARCHAR(255) NOT NULL,
+  `tipo_id` VARCHAR(255) NOT NULL,
+  `nombre` VARCHAR(255) NULL DEFAULT NULL,
+  `direccion` VARCHAR(255) NULL DEFAULT NULL,
+  `telefono` VARCHAR(255) NULL DEFAULT NULL,
+  PRIMARY KEY (`id_proveedor`),
+  INDEX `fk_proveedores_tipos_idx` (`tipo_id` ASC) VISIBLE,
+  CONSTRAINT `fk_proveedores_tipos`
+    FOREIGN KEY (`tipo_id`)
+    REFERENCES `comercio`.`tipos` (`tipo_id`))
+ENGINE = InnoDB
+DEFAULT CHARACTER SET = utf8mb3;
+
+
+-- -----------------------------------------------------
+-- Table `comercio`.`recetas`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `comercio`.`recetas` (
+  `id_insumo` VARCHAR(255) NOT NULL,
+  `id_producto` VARCHAR(255) NOT NULL,
+  `cantidad` SMALLINT NULL DEFAULT NULL,
+  PRIMARY KEY (`id_insumo`, `id_producto`),
+  INDEX `fk_recetas_productos_idx` (`id_producto` ASC) VISIBLE,
+  INDEX `fk_recetas_insumos_idx` (`id_insumo` ASC) VISIBLE,
+  CONSTRAINT `fk_recetas_insumos`
+    FOREIGN KEY (`id_insumo`)
+    REFERENCES `comercio`.`insumos` (`id_insumo`),
+  CONSTRAINT `fk_recetas_productos`
+    FOREIGN KEY (`id_producto`)
+    REFERENCES `comercio`.`productos` (`id_producto`))
+ENGINE = InnoDB
+DEFAULT CHARACTER SET = utf8mb3;
 
 
 SET SQL_MODE=@OLD_SQL_MODE;
@@ -365,9 +342,9 @@ mysql> select * from insumos;
 10 rows in set (0,00 sec)
 
 CALL CrearReceta(
-    'P011', 'Pan Integral', 'Producto Terminado', 12000, 'Pan hecho con harina integral',
-    'I011', 'Harina Integral', 'Materia Prima', 1600, 1, 3,
-    'I012', 'Semillas de Amapola', 'Materia Prima', 1000, 1, 2
+    'P011', 'Pan', 'Producto Terminado', 12000, 'Pan hecho con harina integral',
+    'I014', 'avena', 'Materia Prima', 1600, 1, 3,
+    'I015', 'agua', 'Materia Prima', 1000, 1, 2
 );
 
 si hacemos ahora select de la tabla productos, vemos la integración del pan integral
@@ -481,7 +458,6 @@ BEGIN
 
     START TRANSACTION;
 
-    -- Bloqueo para garantizar que nadie más puede modificar la receta durante la actualización
     SELECT 1
     INTO insumo_existente
     FROM recetas
@@ -489,21 +465,17 @@ BEGIN
     FOR UPDATE;
 
     IF insumo_existente THEN
-        -- Si el insumo ya está en la receta, actualizamos la cantidad del insumo
         UPDATE recetas
         SET cantidad = p_cantidad
         WHERE id_producto = p_id_producto AND id_insumo = p_id_insumo;
 
-        -- Insertar si no existe
         INSERT INTO recetas (id_insumo, id_producto, cantidad)
         VALUES (p_nuevo_id_insumo, p_id_producto, p_nueva_cantidad)
         ON DUPLICATE KEY UPDATE
-            cantidad = VALUES(cantidad); -- Si ya existe, actualizamos la cantidad
+            cantidad = VALUES(cantidad); 
 
     ELSE
-        -- Si no existe la receta, lanzamos un error
-        SIGNAL SQLSTATE '45000'
-        SET MESSAGE_TEXT = 'La receta especificada no existe.';
+        SET MESSAGE_TEXT = 'No existe la receta.';
     END IF;
 
     COMMIT;
@@ -533,7 +505,7 @@ mysql> select * from recetas;
 | I008      | P001        |        1 |
 
 vemos que la cantidad de hariana que se necesita es 2
-CALL ActualizarReceta('P001', 'I001', 3, 'I012', 1);
+	CALL ActualizarReceta('P001', 'I001', 3, 'I012', 1);
 
 la tabla cambia:
 
@@ -562,6 +534,123 @@ mysql> select * from recetas;
 3.
 Cree un procedimiento almacenado que permita actualizar los id_productos de la tabla pedidos, en el cual trabaje su sesión con un nivel de aislamiento READ_UNCOMMITED, para que permita la presencia de la lectura sucia sobre la tabla y analice los resultados simulando la ejecución en paralelo de este procedimiento y en una tercera sesión realice una consulta full de la tabla. Nota: La tabla pedidos debe tener como mínimo 40 pedidos simulados.
 
+Primero inserto las 40 facturas para luego generar los pedidos simulados:
+-- Insertar 40 facturas en la tabla facturas_venta
+INSERT INTO facturas_venta (id_cliente, tipo_id_cliente, id_medios_pago, valor, fecha)
+VALUES 
+('C99997', 'TI', 'MP2', 60000, '2024-09-06'),
+('C99998', 'CC', 'MP3', 65000, '2024-09-06'),
+('C99999', 'TI', 'MP1', 70000, '2024-09-07'),
+('C99987', 'CC', 'MP2', 75000, '2024-09-07'),
+('C99988', 'TI', 'MP3', 80000, '2024-09-08'),
+('C99989', 'CC', 'MP1', 85000, '2024-09-08'),
+('C99990', 'TI', 'MP2', 90000, '2024-09-09'),
+('C99991', 'CC', 'MP3', 95000, '2024-09-09'),
+('C99992', 'TI', 'MP1', 100000, '2024-09-10'),
+('C99993', 'CC', 'MP2', 105000, '2024-09-10'),
+('C99994', 'TI', 'MP3', 110000, '2024-09-11'),
+('C99995', 'CC', 'MP1', 115000, '2024-09-11'),
+('C99996', 'TI', 'MP2', 120000, '2024-09-12'),
+('C99997', 'CC', 'MP3', 125000, '2024-09-12'),
+('C99998', 'TI', 'MP1', 130000, '2024-09-13'),
+('C99999', 'CC', 'MP2', 135000, '2024-09-13'),
+('C99987', 'TI', 'MP3', 140000, '2024-09-14'),
+('C99988', 'CC', 'MP1', 145000, '2024-09-14'),
+('C99989', 'TI', 'MP2', 150000, '2024-09-15'),
+('C99990', 'CC', 'MP3', 155000, '2024-09-15'),
+('C99991', 'TI', 'MP1', 160000, '2024-09-16'),
+('C99992', 'CC', 'MP2', 165000, '2024-09-16'),
+('C99993', 'TI', 'MP3', 170000, '2024-09-17'),
+('C99994', 'CC', 'MP1', 175000, '2024-09-17'),
+('C99995', 'TI', 'MP2', 180000, '2024-09-18'),
+('C99996', 'CC', 'MP3', 185000, '2024-09-18'),
+('C99997', 'TI', 'MP1', 190000, '2024-09-19'),
+('C99998', 'CC', 'MP2', 195000, '2024-09-19'),
+('C99999', 'TI', 'MP3', 200000, '2024-09-20');
+
+Ahora los pedidos: 
+
+INSERT INTO pedidos (id_factura, id_producto, fecha)
+VALUES
+(41,  'P001', '2024-09-01'),
+(42,  'P002', '2024-09-01'),
+(43,  'P003', '2024-09-02'),
+(44,  'P004', '2024-09-02'),
+(45,  'P005', '2024-09-03'),
+(46,  'P006', '2024-09-03'),
+(47,  'P007', '2024-09-04'),
+(48,  'P008', '2024-09-04'),
+(49,  'P009', '2024-09-05'),
+(50,  'P010', '2024-09-05'),
+(119, 'P001', '2024-09-01'),
+(120, 'P002', '2024-09-01'),
+(121, 'P003', '2024-09-02'),
+(122, 'P004', '2024-09-02'),
+(123, 'P005', '2024-09-03'),
+(124, 'P006', '2024-09-03'),
+(125, 'P007', '2024-09-04'),
+(126, 'P008', '2024-09-04'),
+(127, 'P009', '2024-09-05'),
+(128, 'P010', '2024-09-05'),
+(129, 'P001', '2024-09-01'),
+(130, 'P002', '2024-09-01'),
+(131, 'P003', '2024-09-02'),
+(132, 'P004', '2024-09-02'),
+(133, 'P005', '2024-09-03'),
+(134, 'P006', '2024-09-03'),
+(135, 'P007', '2024-09-04'),
+(136, 'P008', '2024-09-04'),
+(137, 'P009', '2024-09-05'),
+(138, 'P010', '2024-09-05'),
+(139, 'P001', '2024-09-01'),
+(140, 'P002', '2024-09-01'),
+(141, 'P003', '2024-09-02'),
+(142, 'P004', '2024-09-02'),
+(143, 'P005', '2024-09-03'),
+(144, 'P006', '2024-09-03'),
+(145, 'P007', '2024-09-04'),
+(146, 'P008', '2024-09-04'),
+(147, 'P009', '2024-09-05'),
+(148, 'P010', '2024-09-05');
+
+
+DELIMITER $$
+
+CREATE PROCEDURE actualizar_producto_en_factura(
+    IN p_id_factura INT,
+    IN p_nuevo_id_producto VARCHAR(10)
+)
+BEGIN
+
+    SET TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;
+    
+    START TRANSACTION;
+
+    -- Actualizamos el id_producto
+    UPDATE pedidos
+    SET id_producto = p_nuevo_id_producto
+    WHERE id_factura = p_id_factura;
+
+    COMMIT;
+
+    SELECT 'Actualización realizada con éxito' AS mensaje;
+END$$
+
+DELIMITER ;
+
+Simulaciones
+Sesión 1 y Sesión 2: Realizaran actualizaciones simultáneas en diferentes conexiones para observar cómo el nivel de aislamiento READ UNCOMMITTED permite lecturas sucias.
+CALL actualizar_producto_en_factura(41, 'P004');
+
+CALL actualizar_producto_en_factura(42, 'P005');
+
+Y en la sección 3:
+SELECT * FROM pedidos;
+
+La prueba de la simulación se encuentra en una imagen en la carpeta del taller.
+
+...
+
 4. INDICES -----------------------------------------------------------------------------------
 
 Cree para todas las llaves foráneas de su modelo, un índice que cumpla con las características vistas en la clase anterior, según su criterio y  análisis.
@@ -586,7 +675,93 @@ No incluí indices en tres llaves (tipo_id, id_cliente y tipo_id_cliente) porque
 
 
 5.
-Cree un procedimiento almacenado que permiso insertar, 100mil clientes nuevos, utilice si es preciso ciclos para que trabaje óptimamente.
+Cree un procedimiento almacenado que permita insertar, 100mil clientes nuevos, utilice si es preciso ciclos para que trabaje óptimamente.
+
+Para este punto cree un csv utilizando python con la libreria "csv", para que la creación fuera automática y creará múltiples usuarios y los guardara en el archivo csv:
+--------------------------------Código python----------------------------------
+import csv
+import os
+
+# Ruta donde guardar el CSV
+ruta_csv = os.path.expanduser('~/Documentos/DataBases/Actividad10Septiembre_Concurrencia_Indices/clientes.csv')
+
+# Crear el archivo CSV con 100,000 registros
+with open(ruta_csv, mode='w', newline='') as file:
+    writer = csv.writer(file)
+    writer.writerow(['id_cliente', 'tipo_id', 'nombres', 'apellidos', 'fecha_nacimiento'])
+
+    # Generar 100,000 registros ficticios
+    for i in range(1, 100001):
+        id_cliente = f'C{i:05d}'
+        tipo_id = 'CC' if i % 2 == 0 else 'TI'
+        nombres = f'Nombre_{i}'
+        apellidos = f'Apellido_{i}'
+        fecha_nacimiento = '1990-01-01'
+        writer.writerow([id_cliente, tipo_id, nombres, apellidos, fecha_nacimiento])
+
+los guarda en esta ruta: ~/Documentos/DataBases/Actividad10Septiembre_Concurrencia_Indices/clientes.csv
+--------------------------------------------------------------------------------
+
+
+luego inserte todos los datos utilizando el csv:
+
+LOAD DATA INFILE '~/Documentos/DataBases/Actividad10Septiembre_Concurrencia_Indices/clientes.csv'
+INTO TABLE clientes
+FIELDS TERMINATED BY ',' 
+ENCLOSED BY '"'
+LINES TERMINATED BY '\n'
+IGNORE 1 ROWS
+(id_cliente, tipo_id, nombres, apellidos, fecha_nacimiento);
+
+Aquí podemos ver un pequeño ejemplo del contenido de la tabla:
+
++------------------------------------------------------------------------------+
+| C99957     | TI      | Nombre_99957  | Apellido_99957  | 1990-01-01 00:00:00 |
+| C99958     | CC      | Nombre_99958  | Apellido_99958  | 1990-01-01 00:00:00 |
+| C99959     | TI      | Nombre_99959  | Apellido_99959  | 1990-01-01 00:00:00 |
+| C99960     | CC      | Nombre_99960  | Apellido_99960  | 1990-01-01 00:00:00 |
+| C99961     | TI      | Nombre_99961  | Apellido_99961  | 1990-01-01 00:00:00 |
+| C99962     | CC      | Nombre_99962  | Apellido_99962  | 1990-01-01 00:00:00 |
+| C99963     | TI      | Nombre_99963  | Apellido_99963  | 1990-01-01 00:00:00 |
+| C99964     | CC      | Nombre_99964  | Apellido_99964  | 1990-01-01 00:00:00 |
+| C99965     | TI      | Nombre_99965  | Apellido_99965  | 1990-01-01 00:00:00 |
+| C99966     | CC      | Nombre_99966  | Apellido_99966  | 1990-01-01 00:00:00 |
+| C99967     | TI      | Nombre_99967  | Apellido_99967  | 1990-01-01 00:00:00 |
+| C99968     | CC      | Nombre_99968  | Apellido_99968  | 1990-01-01 00:00:00 |
+| C99969     | TI      | Nombre_99969  | Apellido_99969  | 1990-01-01 00:00:00 |
+| C99970     | CC      | Nombre_99970  | Apellido_99970  | 1990-01-01 00:00:00 |
+| C99971     | TI      | Nombre_99971  | Apellido_99971  | 1990-01-01 00:00:00 |
+| C99972     | CC      | Nombre_99972  | Apellido_99972  | 1990-01-01 00:00:00 |
+| C99973     | TI      | Nombre_99973  | Apellido_99973  | 1990-01-01 00:00:00 |
+| C99974     | CC      | Nombre_99974  | Apellido_99974  | 1990-01-01 00:00:00 |
+| C99975     | TI      | Nombre_99975  | Apellido_99975  | 1990-01-01 00:00:00 |
+| C99976     | CC      | Nombre_99976  | Apellido_99976  | 1990-01-01 00:00:00 |
+| C99977     | TI      | Nombre_99977  | Apellido_99977  | 1990-01-01 00:00:00 |
+| C99978     | CC      | Nombre_99978  | Apellido_99978  | 1990-01-01 00:00:00 |
+| C99979     | TI      | Nombre_99979  | Apellido_99979  | 1990-01-01 00:00:00 |
+| C99980     | CC      | Nombre_99980  | Apellido_99980  | 1990-01-01 00:00:00 |
+| C99981     | TI      | Nombre_99981  | Apellido_99981  | 1990-01-01 00:00:00 |
+| C99982     | CC      | Nombre_99982  | Apellido_99982  | 1990-01-01 00:00:00 |
+| C99983     | TI      | Nombre_99983  | Apellido_99983  | 1990-01-01 00:00:00 |
+| C99984     | CC      | Nombre_99984  | Apellido_99984  | 1990-01-01 00:00:00 |
+| C99985     | TI      | Nombre_99985  | Apellido_99985  | 1990-01-01 00:00:00 |
+| C99986     | CC      | Nombre_99986  | Apellido_99986  | 1990-01-01 00:00:00 |
+| C99987     | TI      | Nombre_99987  | Apellido_99987  | 1990-01-01 00:00:00 |
+| C99988     | CC      | Nombre_99988  | Apellido_99988  | 1990-01-01 00:00:00 |
+| C99989     | TI      | Nombre_99989  | Apellido_99989  | 1990-01-01 00:00:00 |
+| C99990     | CC      | Nombre_99990  | Apellido_99990  | 1990-01-01 00:00:00 |
+| C99991     | TI      | Nombre_99991  | Apellido_99991  | 1990-01-01 00:00:00 |
+| C99992     | CC      | Nombre_99992  | Apellido_99992  | 1990-01-01 00:00:00 |
+| C99993     | TI      | Nombre_99993  | Apellido_99993  | 1990-01-01 00:00:00 |
+| C99994     | CC      | Nombre_99994  | Apellido_99994  | 1990-01-01 00:00:00 |
+| C99995     | TI      | Nombre_99995  | Apellido_99995  | 1990-01-01 00:00:00 |
+| C99996     | CC      | Nombre_99996  | Apellido_99996  | 1990-01-01 00:00:00 |
+| C99997     | TI      | Nombre_99997  | Apellido_99997  | 1990-01-01 00:00:00 |
+| C99998     | CC      | Nombre_99998  | Apellido_99998  | 1990-01-01 00:00:00 |
+| C99999     | TI      | Nombre_99999  | Apellido_99999  | 1990-01-01 00:00:00 |
++------------+---------+---------------+-----------------+---------------------+
+
+
 
 6.
 Cree un procedimiento almacenado que permita actualizar los datos de un cliente su nombre y apellido.

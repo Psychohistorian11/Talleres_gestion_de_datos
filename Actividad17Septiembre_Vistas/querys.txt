@@ -1,0 +1,122 @@
+
+------------------------------------------------------------Punto 1 ----------------------------------------------------------
+Crear una vista, que me permita abstraer la siguiente información:
+Id_producto, Nombre_Producto, Precio, Insumos(concatenar los insumos por id, separado por coma):
+
+CREATE VIEW resumen_productos AS 
+SELECT 
+    p.id_producto AS id_producto,
+    p.nombre AS nombre,
+    p.precio AS precio,
+    GROUP_CONCAT(r.id_insumo SEPARATOR ',') AS id_insumos
+FROM 
+    productos p
+LEFT JOIN 
+    recetas r ON p.id_producto = r.id_producto
+GROUP BY 
+    p.id_producto;
+    
+    
+mysql> select * from resumen_productos; 
++-------------+-------------------+--------+---------------------+
+| id_producto | nombre            | precio | id_insumos          |
++-------------+-------------------+--------+---------------------+
+| P001        | Pan de Chocolate  |  10000 | I001,I002,I008,I012 |
+| P002        | Torta de Vainilla |  15000 | NULL                |
+| P003        | Croissant         |   5000 | I004,I005           |
+| P004        | Galletas          |   7000 | NULL                |
+| P005        | Café              |   3000 | I007,I009           |
+| P006        | Capuchino         |   4000 | I003,I009,I010      |
+| P007        | Sandwich          |   8000 | NULL                |
+| P008        | Empanada          |   3000 | NULL                |
+| P009        | Jugos             |   2000 | NULL                |
+| P010        | Té                |   2500 | NULL                |
+| P011        | Pan Integral      |  12000 | I011,I012,I014,I015 |
+| P012        | Pan de Centeno    |  13000 | I001,I013           |
++-------------+-------------------+--------+---------------------+
+12 rows in set (0,00 sec)
+
+
+------------------------------------------------------------Punto 2 ----------------------------------------------------------
+Crear una vista que me permita abstraer la siguiente información:
+Tipo_producto, nombre_Producto, Cantidad_pedidos_Producto(count)
+
+CREATE VIEW cantidad_producto AS 
+SELECT 
+    p.tipo AS tipo,
+    p.nombre AS nombre,
+    COUNT(pe.id_producto) AS cantidad_pedidos
+FROM 
+    productos p
+LEFT JOIN 
+    pedidos pe ON p.id_producto = pe.id_producto
+GROUP BY 
+    p.id_producto;
+
+mysql> select * from cantidad_producto;
++--------------------+-------------------+------------------+
+| tipo               | nombre            | cantidad_pedidos |
++--------------------+-------------------+------------------+
+| Producto Terminado | Pan de Chocolate  |                3 |
+| Producto Terminado | Torta de Vainilla |                3 |
+| Producto Terminado | Croissant         |                4 |
+| Producto Terminado | Galletas          |                4 |
+| Producto Terminado | Café              |                5 |
+| Producto Terminado | Capuchino         |                5 |
+| Producto Terminado | Sandwich          |                4 |
+| Producto Terminado | Empanada          |                4 |
+| Producto Terminado | Jugos             |                4 |
+| Producto Terminado | Té                |                4 |
+| Producto Terminado | Pan Integral      |                0 |
+| Producto Terminado | Pan de Centeno    |                0 |
++--------------------+-------------------+------------------+
+12 rows in set (0,01 sec)
+
+------------------------------------------------------------Punto 3 ----------------------------------------------------------
+Crear una vista que me permita abstraer la siguiente información:
+id_Factura, Nombre_Cliente,Apellido_Cliente, Cedula o dentificador_cliente, valor.
+  Nota: Filtar solo las facturas que se pagaron en efectivo.
+  
+CREATE VIEW vista_facturas_efectivo AS 
+SELECT 
+    f.id_factura AS id_factura,
+    c.nombres AS nombres,
+    c.apellidos AS apellidos,
+    t.descripcion AS descripcion_tipo_id,
+    f.valor AS valor
+FROM 
+    facturas_venta f
+JOIN 
+    clientes c ON f.id_cliente = c.id_cliente
+JOIN 
+    tipos t ON c.tipo_id = t.tipo_id
+JOIN 
+    medios_pago mp ON f.id_medios_pago = mp.id_medios_pago
+WHERE 
+    mp.descripcion = 'efectivo';
+    
+    
+mysql> select * from vista_facturas_efectivo; 
++------------+--------------+----------------+------------------------+--------+
+| id_factura | nombres      | apellidos      | descripcion_tipo_id    | valor  |
++------------+--------------+----------------+------------------------+--------+
+|        148 | Nombre_99996 | Apellido_99996 | Cédula de Ciudadanía   |  90000 |
+|        142 | Nombre_99990 | Apellido_99990 | Cédula de Ciudadanía   |  80000 |
+|        138 | Nombre_99996 | Apellido_99996 | Cédula de Ciudadanía   |  90000 |
+|        132 | Nombre_99990 | Apellido_99990 | Cédula de Ciudadanía   |  80000 |
+|        128 | Nombre_99996 | Apellido_99996 | Cédula de Ciudadanía   |  90000 |
+|        122 | Nombre_99990 | Apellido_99990 | Cédula de Ciudadanía   |  80000 |
+|         50 | Nombre_99996 | Apellido_99996 | Cédula de Ciudadanía   |  90000 |
+|         44 | Nombre_99990 | Apellido_99990 | Cédula de Ciudadanía   |  80000 |
+|        145 | Nombre_99993 | Apellido_99993 | Tarjeta de Identidad   | 130000 |
+|        139 | Nombre_99987 | Apellido_99987 | Tarjeta de Identidad   |  50000 |
+|        135 | Nombre_99993 | Apellido_99993 | Tarjeta de Identidad   | 130000 |
+|        129 | Nombre_99987 | Apellido_99987 | Tarjeta de Identidad   |  50000 |
+|        125 | Nombre_99993 | Apellido_99993 | Tarjeta de Identidad   | 130000 |
+|        119 | Nombre_99987 | Apellido_99987 | Tarjeta de Identidad   |  50000 |
+|         47 | Nombre_99993 | Apellido_99993 | Tarjeta de Identidad   | 130000 |
+|         41 | Nombre_99987 | Apellido_99987 | Tarjeta de Identidad   |  50000 |
++------------+--------------+----------------+------------------------+--------+
+16 rows in set (0,01 sec)
+
+
